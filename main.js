@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Menu, ipcMain, dialog } = require('electron');
 const path = require('path');
+const http = require('http');
 require('dotenv').config();
 
 const isDev = process.env.NODE_ENV === 'development';
@@ -13,7 +14,47 @@ let mainWindow;
 const REACT_DEVELOPER_TOOLS =
   'fmkadmapgofadopljbjfkapdkoienihi';
 
-function createWindow() {
+/**
+ * Wait for server to be ready before loading URL
+ */
+async function waitForServer(url, maxAttempts = 30) {
+  return new Promise((resolve) => {
+    let attempts = 0;
+    
+    const checkServer = () => {
+      attempts++;
+      
+      const request = http.get(url + '/api/health', (res) => {
+        if (res.statusCode === 200) {
+          logger.info('Server is ready, loading Electron UI');
+          resolve(true);
+        } else {
+          if (attempts < maxAttempts) {
+            setTimeout(checkServer, 500);
+          } else {
+            logger.warn('Server check failed after max attempts, proceeding anyway');
+            resolve(false);
+          }
+        }
+      });
+      
+      request.on('error', () => {
+        if (attempts < maxAttempts) {
+          setTimeout(checkServer, 500);
+        } else {
+          logger.warn('Could not connect to server after max attempts, proceeding anyway');
+          resolve(false);
+        }
+      });
+      
+      request.end();
+    };
+    
+    checkServer();
+  });
+}
+
+async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1400,
     height: 900,
@@ -27,6 +68,12 @@ function createWindow() {
   });
 
   const startUrl = process.env.ELECTRON_START_URL || `file://${path.join(__dirname, '../build/index.html')}`;
+  
+  // If loading from localhost, wait for server to be ready
+  if (startUrl.includes('localhost')) {
+    await waitForServer(startUrl);
+  }
+  
   mainWindow.loadURL(startUrl);
 
   if (isDev) {
@@ -38,8 +85,8 @@ function createWindow() {
   });
 }
 
-app.on('ready', () => {
-  createWindow();
+app.on('ready', async () => {
+  await createWindow();
   createMenu();
   logger.info('Application started');
 });
@@ -50,9 +97,9 @@ app.on('window-all-closed', () => {
   }
 });
 
-app.on('activate', () => {
+app.on('activate', async () => {
   if (mainWindow === null) {
-    createWindow();
+    await createWindow();
   }
 });
 
@@ -184,7 +231,11 @@ ipcMain.handle('delete-workflow', async (event, id) => {
 ipcMain.handle('execute-workflow', async (event, id) => {
   try {
     logger.info(`Executing workflow: ${id}`);
-    const result = await executor.execute(id);
+    const workflow = storage.getWorkflow(id);
+    if (!workflow) {
+      return { success: false, error: 'Workflow not found' };
+    }
+    const result = await executor.execute(workflow);
     return { success: true, result };
   } catch (error) {
     logger.error('Error executing workflow:', error);

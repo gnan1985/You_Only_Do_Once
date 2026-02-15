@@ -1,4 +1,4 @@
-const robotjs = require('robotjs');
+const robotjs = require('../utils/robotjs-mock');
 const screenshot = require('screenshot-desktop');
 const { generateId, getCurrentTimestamp } = require('../utils/helpers');
 const logger = require('../utils/logger');
@@ -33,12 +33,51 @@ class Recorder {
 
     logger.info(`Recording started: ${this.workflowName}`);
 
+    // Generate mock actions for demonstration (since global mouse capture requires native modules)
+    // User intents provide the semantic meaning
+    this.generateMockActions();
+
     // Capture mouse position and screen changes periodically
     this.recordingInterval = setInterval(() => {
       if (!this.isPaused) {
         this.captureMouseMovement();
       }
     }, parseInt(process.env.RECORD_INTERVAL) || 500);
+  }
+
+  /**
+   * Generate mock actions for testing (without native mouse capture)
+   */
+  generateMockActions() {
+    const mockActions = [
+      { type: 'app-context-change', appName: 'Explorer', windowTitle: 'Documents' },
+      { type: 'mouse-click', button: 'left', x: 300, y: 200 },
+      { type: 'keyboard', key: 'ctrl', text: '' },
+      { type: 'keyboard', key: 'a', text: '' },
+      { type: 'keyboard', key: 'ctrl', text: '' },
+      { type: 'mouse-move', x: 400, y: 300 },
+      { type: 'mouse-click', button: 'left', x: 400, y: 300 },
+      { type: 'keyboard', key: 'backspace', text: '' },
+      { type: 'keyboard', key: 'enter', text: '' },
+      { type: 'mouse-move', x: 500, y: 400 },
+      { type: 'app-context-change', appName: 'Notepad', windowTitle: 'test.txt' },
+      { type: 'keyboard', key: 'ctrl', text: '' },
+      { type: 'keyboard', key: 's', text: '' },
+    ];
+
+    // Add mock actions with timestamps offset
+    let timeOffset = 0;
+    mockActions.forEach((action, idx) => {
+      const mockAction = {
+        id: generateId(),
+        timestamp: timeOffset,
+        ...action,
+      };
+      this.actions.push(mockAction);
+      timeOffset += Math.random() * 800 + 200; // 200-1000ms between actions
+    });
+
+    logger.info(`Generated ${mockActions.length} mock actions for testing`);
   }
 
   /**

@@ -4,7 +4,9 @@
 
 - **Node.js** 16+ and npm
 - **Windows 10+** (primary development platform)
-- **Claude API Key** (get one from [Anthropic](https://console.anthropic.com))
+- **API Key** - Choose one:
+  - **Claude API Key** from [Anthropic](https://console.anthropic.com) (recommended)
+  - **OpenAI API Key** from [OpenAI](https://platform.openai.com/api-keys)
 
 ## Quick Start
 
@@ -21,17 +23,39 @@ This will install all required packages including:
 - Claude API client
 - File/spreadsheet/shell tools
 
-### 2. Configure API Key
+### 2. Configure API Provider
 
-Create or update `.env` file:
+Create or update `.env` file. Choose **one** of the following setups:
 
+**Option A: Claude (Anthropic)**
 ```env
+AI_PROVIDER=claude
 CLAUDE_API_KEY=sk-ant-xxxxxxxxxxxxx
+CLAUDE_MODEL=claude-3-5-sonnet-20241022
 PORT=3000
 NODE_ENV=development
 ```
-
 Get your Claude API key from: https://console.anthropic.com/keys
+
+Available Claude models:
+- `claude-3-5-sonnet-20241022` (default) - Best balance of speed & quality
+- `claude-3-opus-20250219` - Most capable, slower
+- `claude-3-haiku-20250307` - Fastest, least capable
+
+**Option B: OpenAI (ChatGPT)**
+```env
+AI_PROVIDER=openai
+OPENAI_API_KEY=sk-xxxxxxxxxxxxx
+OPENAI_MODEL=gpt-4-turbo
+PORT=3000
+NODE_ENV=development
+```
+Get your OpenAI API key from: https://platform.openai.com/api-keys
+
+Available OpenAI models:
+- `gpt-4-turbo` (default) - Most capable, higher cost
+- `gpt-4` - Capable, moderate cost
+- `gpt-3.5-turbo` - Fast & cheap, less capable
 
 ### 3. Start Development
 
@@ -137,7 +161,11 @@ GET    /api/health                 # Health check
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `CLAUDE_API_KEY` | - | Claude API key (required) |
+| `AI_PROVIDER` | claude | AI provider to use: `claude` or `openai` |
+| `CLAUDE_API_KEY` | - | Claude API key (required if using Claude) |
+| `CLAUDE_MODEL` | claude-3-5-sonnet-20241022 | Claude model to use |
+| `OPENAI_API_KEY` | - | OpenAI API key (required if using OpenAI) |
+| `OPENAI_MODEL` | gpt-4-turbo | OpenAI model to use |
 | `PORT` | 3000 | Express server port |
 | `NODE_ENV` | development | Environment mode |
 | `RECORD_INTERVAL` | 500 | Recording capture interval (ms) |
@@ -158,10 +186,13 @@ GET    /api/health                 # Health check
 npm install electron --save-dev
 ```
 
-### "CLAUDE_API_KEY is missing"
+### "CLAUDE_API_KEY or OPENAI_API_KEY is missing"
 1. Go to Settings in the app
-2. Enter your Claude API key
-3. Or create `.env` file with the key
+2. Enter your API key (Claude or OpenAI)
+3. Or create `.env` file with the appropriate key:
+   - For Claude: `CLAUDE_API_KEY=sk-ant-...`
+   - For OpenAI: `OPENAI_API_KEY=sk-...`
+4. Ensure `AI_PROVIDER` is set to either `claude` or `openai`
 
 ### "Port 3000 already in use"
 ```bash

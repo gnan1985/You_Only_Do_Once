@@ -5,16 +5,19 @@ An intelligent automation platform that learns your daily workflows and repeats 
 ## Architecture
 
 - **Recording**: Captures user actions with intent descriptions via pause points
-- **Analysis**: Claude AI analyzes recorded workflows and generates semantic procedures
+- **Analysis**: AI analyzes recorded workflows and generates semantic procedures (supports Claude & OpenAI)
 - **Execution**: Executes workflows using MCP tools (file system, APIs, shell commands, spreadsheets)
 - **Adaptation**: Intelligently adapts to changes in filenames, data patterns, and UI layouts
 
 ## Setup
 
 1. Clone the repository
-2. Copy `.env.example` to `.env` and add your Claude API key
-3. Run `npm install`
-4. Run `npm run dev` to start development mode
+2. Copy `.env.example` to `.env` and add your API key (Claude or OpenAI)
+3. Set `AI_PROVIDER` to either `claude` or `openai`
+4. Run `npm install`
+5. Run `npm run dev` to start development mode
+
+See [SETUP.md](SETUP.md) for detailed configuration instructions.
 
 ## Project Structure
 
@@ -26,7 +29,8 @@ An intelligent automation platform that learns your daily workflows and repeats 
 ├── src/
 │   ├── modules/               # Core business logic
 │   │   ├── recorder.js        # Records user actions & intent
-│   │   ├── workflow-analyzer.js # Claude integration
+│   │   ├── workflow-analyzer.js # AI integration (Claude/OpenAI)
+│   │   ├── ai-client.js       # Unified AI client (Claude & OpenAI)
 │   │   ├── executor.js        # Executes workflows
 │   │   ├── mcp-tools.js       # MCP tool definitions
 │   │   └── storage.js         # Workflow persistence
@@ -47,6 +51,26 @@ An intelligent automation platform that learns your daily workflows and repeats 
 ```
 
 ## Key Concepts
+
+### AI Provider Support
+
+The system supports both **Claude (Anthropic)** and **OpenAI (ChatGPT)**. Choose your preferred provider and model in `.env`:
+
+```env
+# Claude
+AI_PROVIDER=claude
+CLAUDE_MODEL=claude-3-5-sonnet-20241022
+
+# Or OpenAI
+AI_PROVIDER=openai
+OPENAI_MODEL=gpt-4-turbo
+```
+
+**Recommended models:**
+- **Claude**: `claude-3-5-sonnet-20241022` (best balance) or `claude-3-opus-20250219` (most capable)
+- **OpenAI**: `gpt-4-turbo` (most capable) or `gpt-3.5-turbo` (faster & cheaper)
+
+See [SETUP.md](SETUP.md) for detailed configuration and all available models.
 
 ### Recording with Intent
 
@@ -91,6 +115,10 @@ When replayed, Claude decides which MCP tools to use based on current system sta
 - `POST /api/workflows/:id/execute` - Execute workflow
 - `DELETE /api/workflows/:id` - Delete workflow
 - `POST /api/analyze` - Analyze recorded actions
+
+## Stop APP
+
+- Get-Process | Where-Object {$_.Name -eq "node" -or $_.Name -eq "electron"} | Stop-Process -Force 2>$null; Start-Sleep -Milliseconds 500
 
 ## License
 

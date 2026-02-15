@@ -21,7 +21,7 @@ logger.info('Express server starting...');
 
 /**
  * POST /api/workflows
- * Save a recorded workflow
+ * Save a recorded workflow (upsert by name)
  */
 app.post('/api/workflows', async (req, res) => {
   try {
@@ -36,18 +36,17 @@ app.post('/api/workflows', async (req, res) => {
     const analysis = await workflowAnalyzer.analyzeWorkflow(recordedData);
 
     const workflow = {
-      id: require('uuid').v4(),
       name,
       recordedData,
       analysis,
-      createdAt: new Date().toISOString(),
       executionHistory: [],
     };
 
-    storage.saveWorkflow(workflow);
-    logger.info(`Workflow saved: ${workflow.id}`);
+    // Use saveOrUpdateWorkflow to handle deduplication by name
+    const savedWorkflow = storage.saveOrUpdateWorkflow(workflow);
+    logger.info(`Workflow saved/updated: ${savedWorkflow.id}`);
 
-    res.json({ success: true, workflow });
+    res.json({ success: true, workflow: savedWorkflow });
   } catch (error) {
     logger.error('Error saving workflow:', error);
     res.status(500).json({ success: false, error: error.message });
@@ -157,6 +156,18 @@ app.post('/api/analyze', async (req, res) => {
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+// =====================
+// Static Files & SPA
+// =====================
+
+// Serve static files from renderer directory
+app.use(express.static(path.join(__dirname, 'src/renderer')));
+
+// SPA fallback: serve index.html for all non-API routes
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'src/renderer/index.html'));
 });
 
 // =====================

@@ -1,16 +1,13 @@
-const axios = require('axios');
 const logger = require('../utils/logger');
 const mcpTools = require('./mcp-tools');
 
 class Executor {
   constructor() {
-    this.apiKey = process.env.CLAUDE_API_KEY;
-    this.baseUrl = 'https://api.anthropic.com/v1';
-    this.model = 'claude-3-5-sonnet-20241022';
+    logger.info('Executor initialized');
   }
 
   /**
-   * Execute a workflow using Claude and MCP tools
+   * Execute a workflow using MCP tools
    */
   async execute(workflow) {
     try {
@@ -112,6 +109,7 @@ class Executor {
 
       const toolCategory = toolMapping[tool] || tool;
 
+      // Use mcpTools.executeTool which handles the actual execution
       const result = await mcpTools.executeTool(toolCategory, toolAction, parameters);
 
       return {

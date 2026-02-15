@@ -166,6 +166,56 @@ class Storage {
   }
 
   /**
+   * Get workflow by name
+   */
+  getWorkflowByName(name) {
+    try {
+      const allWorkflows = this.getAllWorkflows();
+      return allWorkflows.find(w => w.name === name) || null;
+    } catch (error) {
+      logger.error('Error getting workflow by name:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Save or update workflow (upsert by name)
+   */
+  saveOrUpdateWorkflow(workflow) {
+    try {
+      // Check if a workflow with this name already exists
+      const existing = this.getWorkflowByName(workflow.name);
+      
+      if (existing) {
+        // Update existing workflow, preserve ID and createdAt
+        const updated = {
+          ...workflow,
+          id: existing.id,
+          createdAt: existing.createdAt,
+          updatedAt: new Date().toISOString(),
+        };
+        return this.saveWorkflow(updated);
+      } else {
+        // Create new workflow
+        if (!workflow.id) {
+          workflow.id = uuidv4();
+        }
+        if (!workflow.createdAt) {
+          workflow.createdAt = new Date().toISOString();
+        }
+        return this.saveWorkflow(workflow);
+      }
+    } catch (error) {
+      logger.error('Error in saveOrUpdateWorkflow:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Search workflows by name
+   */
+
+  /**
    * Get workflow statistics
    */
   getStatistics() {
