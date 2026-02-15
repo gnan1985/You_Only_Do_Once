@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>You Only Do Once - AI Workflow Automation</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <h1>🤖 YODO</h1>
+        <p>AI Automation</p>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" data-view="dashboard">
+          <span class="icon">📊</span>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-view="recorder">
+          <span class="icon">🎥</span>
+          <span>Record Workflow</span>
+        </button>
+        <button class="nav-item" data-view="workflows">
+          <span class="icon">📋</span>
+          <span>My Workflows</span>
+        </button>
+        <button class="nav-item" data-view="execute">
+          <span class="icon">▶️</span>
+          <span>Execute</span>
+        </button>
+        <button class="nav-item" data-view="settings">
+          <span class="icon">⚙️</span>
+          <span>Settings</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>Ready to automate!</p>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Dashboard View -->
+      <div id="dashboard" class="view active">
+        <header class="view-header">
+          <h2>Dashboard</h2>
+          <p class="subtitle">Overview of your automation workflows</p>
+        </header>
+
+        <div class="dashboard-grid">
+          <div class="stat-card">
+            <div class="stat-number" id="stat-workflows">0</div>
+            <div class="stat-label">Total Workflows</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-executions">0</div>
+            <div class="stat-label">Total Executions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-success-rate">0%</div>
+            <div class="stat-label">Success Rate</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-number" id="stat-time-saved">0h</div>
+            <div class="stat-label">Time Saved</div>
+          </div>
+        </div>
+
+        <div class="recent-workflows">
+          <h3>Recent Workflows</h3>
+          <div id="recent-list" class="workflow-list"></div>
+        </div>
+      </div>
+
+      <!-- Recording View -->
+      <div id="recorder" class="view">
+        <header class="view-header">
+          <h2>Record New Workflow</h2>
+          <p class="subtitle">Teach AI your daily task by demonstrating it</p>
+        </header>
+
+        <div class="recorder-container">
+          <!-- Recording Setup -->
+          <div id="recording-setup" class="recording-section">
+            <div class="form-group">
+              <label for="workflow-name">Workflow Name</label>
+              <input
+                type="text"
+                id="workflow-name"
+                placeholder="e.g., Process Excel Files"
+                class="input"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="workflow-description">Description (optional)</label>
+              <textarea
+                id="workflow-description"
+                placeholder="Describe what you're going to do..."
+                class="input"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <button id="start-recording-btn" class="btn btn-primary btn-lg">
+              🎥 Start Recording
+            </button>
+          </div>
+
+          <!-- Recording In Progress -->
+          <div id="recording-progress" class="recording-section hidden">
+            <div class="recording-header">
+              <div class="recording-indicator">
+                <span class="recording-dot"></span>
+                <span>Recording in progress...</span>
+              </div>
+              <div class="recording-time" id="recording-time">00:00</div>
+            </div>
+
+            <div class="recording-stats">
+              <div class="stat">
+                <span class="label">Actions Captured:</span>
+                <span class="value" id="action-count">0</span>
+              </div>
+              <div class="stat">
+                <span class="label">Intents Added:</span>
+                <span class="value" id="intent-count">0</span>
+              </div>
+            </div>
+
+            <div class="intent-input">
+              <label>What are you doing right now?</label>
+              <form id="intent-form" onsubmit="addIntent(event)">
+                <input
+                  type="text"
+                  id="intent-input"
+                  placeholder="e.g., Opening the spreadsheet..."
+                  class="input"
+                />
+                <button type="submit" class="btn btn-secondary btn-sm">Add Intent</button>
+              </form>
+            </div>
+
+            <div class="control-buttons">
+              <button id="pause-recording-btn" class="btn btn-warning">⏸️ Pause</button>
+              <button id="resume-recording-btn" class="btn btn-info hidden">▶️ Resume</button>
+              <button id="stop-recording-btn" class="btn btn-danger">⏹️ Stop & Analyze</button>
+            </div>
+
+            <div class="recording-log">
+              <h4>Recent Actions</h4>
+              <div id="action-log" class="log-entries"></div>
+            </div>
+          </div>
+
+          <!-- Analysis Results -->
+          <div id="analysis-results" class="recording-section hidden">
+            <div class="analysis-header">
+              <h3>Workflow Analysis Complete</h3>
+              <p>AI has understood your workflow. Review the generated procedures below.</p>
+            </div>
+
+            <div id="analysis-content" class="analysis-content"></div>
+
+            <div class="action-buttons">
+              <button id="save-workflow-btn" class="btn btn-primary btn-lg">
+                💾 Save Workflow
+              </button>
+              <button id="re-record-btn" class="btn btn-secondary btn-lg">
+                🔄 Re-record
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workflows Library View -->
+      <div id="workflows" class="view">
+        <header class="view-header">
+          <h2>My Workflows</h2>
+          <p class="subtitle">Manage and execute your saved workflows</p>
+        </header>
+
+        <div class="workflows-container">
+          <div class="search-bar">
+            <input
+              type="text"
+              id="workflow-search"
+              placeholder="Search workflows..."
+              class="input"
+            />
+          </div>
+
+          <div id="workflows-list" class="workflows-list"></div>
+        </div>
+      </div>
+
+      <!-- Execute View -->
+      <div id="execute" class="view">
+        <header class="view-header">
+          <h2>Execute Workflow</h2>
+          <p class="subtitle">Run your automated workflows</p>
+        </header>
+
+        <div class="execute-container">
+          <div class="workflow-selector">
+            <label for="execute-workflow-select">Select Workflow</label>
+            <select id="execute-workflow-select" class="input">
+              <option value="">Choose a workflow...</option>
+            </select>
+          </div>
+
+          <div id="execution-options" class="hidden">
+            <label class="checkbox">
+              <input type="checkbox" id="dry-run-checkbox" />
+              <span>Dry Run (simulate without making changes)</span>
+            </label>
+            <label class="checkbox">
+              <input type="checkbox" id="confirm-each-step" checked />
+              <span>Confirm each step before executing</span>
+            </label>
+          </div>
+
+          <button id="execute-btn" class="btn btn-primary btn-lg hidden">
+            ▶️ Execute Workflow
+          </button>
+
+          <div id="execution-log" class="execution-log hidden">
+            <h3>Execution Log</h3>
+            <div id="execution-log-entries" class="log-entries"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings View -->
+      <div id="settings" class="view">
+        <header class="view-header">
+          <h2>Settings</h2>
+          <p class="subtitle">Configure the application</p>
+        </header>
+
+        <div class="settings-container">
+          <div class="settings-section">
+            <h3>API Configuration</h3>
+            <div class="form-group">
+              <label for="api-key">Claude API Key</label>
+              <input
+                type="password"
+                id="api-key"
+                placeholder="sk-..."
+                class="input"
+              />
+            </div>
+            <p class="help-text">Your API key is stored locally and never shared.</p>
+          </div>
+
+          <div class="settings-section">
+            <h3>Recording Settings</h3>
+            <div class="form-group">
+              <label for="record-interval">Record Interval (ms)</label>
+              <input
+                type="number"
+                id="record-interval"
+                value="500"
+                min="100"
+                max="5000"
+                class="input"
+              />
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <h3>Execution Settings</h3>
+            <label class="checkbox">
+              <input type="checkbox" id="auto-confirm-steps" />
+              <span>Auto-confirm steps (skip confirmation prompts)</span>
+            </label>
+          </div>
+
+          <div class="settings-section">
+            <h3>Data & Storage</h3>
+            <button id="export-workflows-btn" class="btn btn-secondary">
+              📤 Export All Workflows
+            </button>
+            <button id="clear-history-btn" class="btn btn-warning">
+              🗑️ Clear Execution History
+            </button>
+          </div>
+
+          <div class="settings-actions">
+            <button id="save-settings-btn" class="btn btn-primary btn-lg">
+              💾 Save Settings
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Notification Toast -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Modal for workflow details -->
+    <div id="workflow-modal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 id="modal-title">Workflow Details</h3>
+          <button class="modal-close" onclick="closeModal()">&times;</button>
+        </div>
+        <div id="modal-body" class="modal-body"></div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="closeModal()">Close</button>
+          <button id="modal-execute-btn" class="btn btn-primary">Execute</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

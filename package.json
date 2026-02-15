@@ -1,0 +1,32 @@
+{
+  "name": "you-only-do-once",
+  "version": "1.0.0",
+  "description": "AI-powered workflow automation with MCP integration",
+  "main": "main.js",
+  "homepage": "./",
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run electron\"",
+    "electron": "electron .",
+    "server": "node server.js",
+    "dev": "concurrently \"npm run server\" \"electron .\"",
+    "build": "electron-builder"
+  },
+  "dependencies": {
+    "electron": "^latest",
+    "express": "^4.18.0",
+    "axios": "^1.4.0",
+    "dotenv": "^16.0.0",
+    "robotjs": "^0.6.0",
+    "screenshot-desktop": "^1.13.0",
+    "electron-store": "^8.5.0",
+    "uuid": "^9.0.0",
+    "winston": "^3.8.0",
+    "xlsx": "^0.18.5",
+    "playwright": "^1.40.0",
+    "node-fetch": "^3.3.0",
+    "glob": "^10.3.0"
+  },
+  "devDependencies": {
+    "concurrently": "^8.0.0"
+  }
+}

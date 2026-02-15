@@ -1,0 +1,17 @@
+node_modules/
+.env
+.env.local
+dist/
+build/
+*.log
+logs/
+data/workflows/*
+!data/workflows/.gitkeep
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+package-lock.json
+yarn.lock
